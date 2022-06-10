@@ -6,30 +6,14 @@ require('dotenv').config({
 const {PORT} = process.env;
 const bodyParser = require('body-parser');
 const {graphqlHTTP} = require('express-graphql');
-const {buildSchema} = require('graphql');
-
+const connectDatabase = require( "./helpers/database/connectDatabase" );
+const graphQlSchema = require('./graphql/schema/index');
+const graphQlResolvers = require('./graphql/resolvers/index');
+connectDatabase();
 app.use('/graphql', graphqlHTTP({
-    schema: buildSchema(`
-        type RootQuery {
-            events: [String!]
-        }
-        type RootMutation {
-            createEvent(name: String): String
-        }
-        schema {
-            query: RootQuery
-            mutation: RootMutation
-        }
-    `),
-    rootValue: {
-        events: () => {
-            return ['event 1', 'event 2'];
-        },
-        createEvent: (args) => {
-            return args.name
-        },
-    },
-    graphiql: true
+    schema: graphQlSchema,
+    rootValue: graphQlResolvers,
+    graphiql: true,
 }))
 app.use(bodyParser.json());
 
